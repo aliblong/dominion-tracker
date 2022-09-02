@@ -5,6 +5,9 @@ import { extractSubjectsFromLogLine } from "utils/subjectHelper";
 import {getLogContainer} from "../observers";
 
 const LOG_LINE_CLASS_NAME = "log-line";
+const KINDGOM_GENERATION_LIKELIHOOD_REGEX = new RegExp("^\\s*\\d+%:")
+const CARD_POOL_REGEX = new RegExp("^\\s*Card Pool")
+const EMPTY_REGEX = new RegExp("^\\s*$")  // not currently working
 
 /**
  * Extract an array of DominionLogs from the HTML log container element.
@@ -35,8 +38,11 @@ export const hasKnownAction = (logString: string): boolean =>
 		(
 			logString.includes("Turn ") ||
 			logString.startsWith("Game ") ||
+			CARD_POOL_REGEX.test(logString)||
 			logString.startsWith("Kingdom generated with ") ||
-			logString.includes("Between Turns")||
+			logString === "" ||
+			KINDGOM_GENERATION_LIKELIHOOD_REGEX.test(logString)||
+			EMPTY_REGEX.test(logString)||
 			KnownActions.some(action => logString.includes(action))
 		);
 
@@ -49,7 +55,7 @@ export const isValidLogString = (logString: string): boolean => {
 	const supportedActions = Object.values(DominionAction);
 
 	if (!hasKnownAction(logString)) {
-		logger.error(`Log contains no know action: ${logString}`);
+		logger.error(`Log contains no known action: ${logString}`);
 	}
 
 	return logString && supportedActions.some(action => logString.includes(action));
